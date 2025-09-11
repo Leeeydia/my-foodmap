@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 type MapProps = {
   lat: number;
@@ -10,28 +10,26 @@ type MapProps = {
 
 const Map = ({ lat, lng, level }: MapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<kakao.maps.Map | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) return;
 
     const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAPS_API_KEY;
 
-    if (!(window as any).kakao?.maps) {
+    if (!window.kakao?.maps) {
       const script = document.createElement("script");
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
       script.async = true;
       script.onload = () => {
-        // @ts-expect-error kakao 전역 타입은 d.ts에서 선언됨
         window.kakao.maps.load(() => {
           const options = {
             center: new window.kakao.maps.LatLng(lat, lng),
             level,
           };
-          // @ts-expect-error
-          const createdMap = new window.kakao.maps.Map(mapRef.current, options);
-          setMap(createdMap);
-          // @ts-expect-error
+          const createdMap = new window.kakao.maps.Map(
+            mapRef.current!,
+            options
+          );
           new window.kakao.maps.Marker({
             position: options.center,
             map: createdMap,
@@ -42,15 +40,11 @@ const Map = ({ lat, lng, level }: MapProps) => {
       return;
     }
 
-    // @ts-expect-error
     const options = {
       center: new window.kakao.maps.LatLng(lat, lng),
       level,
     };
-    // @ts-expect-error
-    const createdMap = new window.kakao.maps.Map(mapRef.current, options);
-    setMap(createdMap);
-    // @ts-expect-error
+    const createdMap = new window.kakao.maps.Map(mapRef.current!, options);
     new window.kakao.maps.Marker({ position: options.center, map: createdMap });
   }, [lat, lng, level]);
 
