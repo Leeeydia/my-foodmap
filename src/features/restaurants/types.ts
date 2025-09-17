@@ -5,4 +5,6 @@ export type Restaurant = {
   phone: string;
   website: string;
   image: string;
+  category: string;
+  rating: number;
 };
