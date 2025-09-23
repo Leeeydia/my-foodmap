@@ -1,3 +1,4 @@
+import EateryListWithMap from "@/components/EateryListWithMap";
 import Map from "@/features/map/components/map";
 import RestaurantList from "@/features/restaurants/components/RestaurantList";
 
@@ -10,6 +11,9 @@ const HomePage = () => {
       </section>
       <section>
         <RestaurantList />
+      </section>
+      <section>
+        <EateryListWithMap />
       </section>
     </>
   );
