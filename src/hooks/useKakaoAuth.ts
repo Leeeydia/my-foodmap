@@ -14,6 +14,11 @@ interface KakaoUser {
   };
 }
 
+interface KakaoError {
+  error: string;
+  error_description: string;
+}
+
 export const useKakaoAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -22,7 +27,7 @@ export const useKakaoAuth = () => {
   useEffect(() => {
     const initKakao = () => {
       if (typeof window !== "undefined" && window.Kakao) {
-        const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+        const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
         if (kakaoKey && !window.Kakao.isInitialized()) {
           window.Kakao.init(kakaoKey);
         }
@@ -54,40 +59,27 @@ export const useKakaoAuth = () => {
     setIsLoading(true);
 
     window.Kakao.Auth.login({
-      success: async (authObj: any) => {
+      success: async () => {
         try {
           // 카카오 사용자 정보 가져오기
           window.Kakao.API.request({
             url: "/v2/user/me",
             success: async (userInfo: KakaoUser) => {
-              // Supabase에 사용자 정보 저장 또는 업데이트
-              const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: "oauth",
-                options: {
-                  redirectTo: `${window.location.origin}/auth/callback`,
-                },
-              });
+              // 카카오 정보로 직접 세션 생성 (Supabase OAuth 대신)
+              const userSession: User = {
+                id: userInfo.id.toString(),
+                email: userInfo.kakao_account.email || "",
+                nickname: userInfo.kakao_account.profile?.nickname || "",
+                profile_image:
+                  userInfo.kakao_account.profile?.profile_image_url || "",
+                provider: "kakao",
+              };
 
-              if (error) {
-                console.error("Supabase auth error:", error);
-                // 카카오 정보로 직접 세션 생성
-                const userSession: User = {
-                  id: userInfo.id.toString(),
-                  email: userInfo.kakao_account.email || "",
-                  nickname: userInfo.kakao_account.profile?.nickname || "",
-                  profile_image:
-                    userInfo.kakao_account.profile?.profile_image_url || "",
-                  provider: "kakao",
-                };
-
-                // 로컬 스토리지에 사용자 정보 저장
-                localStorage.setItem("user", JSON.stringify(userSession));
-                setUser(userSession);
-              } else {
-                setUser(data.user);
-              }
+              // 로컬 스토리지에 사용자 정보 저장
+              localStorage.setItem("user", JSON.stringify(userSession));
+              setUser(userSession);
             },
-            fail: (error: any) => {
+            fail: (error: KakaoError) => {
               console.error("카카오 사용자 정보 요청 실패:", error);
               alert("사용자 정보를 가져오는데 실패했습니다.");
             },
@@ -99,7 +91,7 @@ export const useKakaoAuth = () => {
           setIsLoading(false);
         }
       },
-      fail: (err: any) => {
+      fail: (err: KakaoError) => {
         console.error("카카오 로그인 실패:", err);
         alert("카카오 로그인에 실패했습니다.");
         setIsLoading(false);

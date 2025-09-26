@@ -14,7 +14,7 @@ const Map = ({ lat, lng, level }: MapProps) => {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAPS_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
 
     if (!window.kakao?.maps) {
       const script = document.createElement("script");
