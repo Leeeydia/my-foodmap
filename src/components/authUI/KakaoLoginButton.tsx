@@ -1,25 +1,21 @@
 "use client";
 
-import { supabase } from "@/lib/supabaseClient";
+import { useKakaoAuth } from "@/hooks/useKakaoAuth";
 
 export const KakaoLoginButton = () => {
-  const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "kakao",
-      options: {
-        redirectTo: "http://localhost:3000",
-      },
-    });
+  const { loginWithKakao, isLoading } = useKakaoAuth();
 
-    if (error) console.error("Login error:", error);
+  const handleLogin = async () => {
+    await loginWithKakao();
   };
 
   return (
     <button
       onClick={handleLogin}
-      className="px-4 py-2 bg-yellow-400 rounded text-black"
+      disabled={isLoading}
+      className="px-4 py-2 bg-yellow-400 rounded text-black disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      카카오로 로그인
+      {isLoading ? "로그인 중..." : "카카오로 로그인"}
     </button>
   );
 };
